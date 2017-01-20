@@ -1,12 +1,14 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
+import Popup from 'react-popup';
 
 import Login from './components/login';
 import About from './components/about';
 import Dates from './components/dates';
 import Foods from './components/foods';
 
-const path = 'https://nutriview-server.herokuapp.com';
+const path = 'http://localhost:8000';
+// const path = 'https://nutriview-server.herokuapp.com';
 
 class App extends Component {
   constructor(props) {
@@ -50,7 +52,7 @@ class App extends Component {
           summary: newSummary,
         });
       }
-    }).fail(error => alert('No results found.  The Nutritionix API works best with searches like "1 large apple" or "8 ounce milk" as opposed to searches such as "apple".'));
+    }).fail(error => Popup.alert('No results found. The Nutritionix API works best with searches like "1 large apple" or "8 ounce milk" as opposed to searches such as "apple".'));
   }
 
   deleteFood(id) {
@@ -62,7 +64,7 @@ class App extends Component {
       success: (data, status, xhr) => {
         this.getFoods(this.state.selectedDate);
       }
-    }).fail(error => alert('Unable to delete entry from the database.'));
+    }).fail(error => Popup.alert('Unable to delete entry from the database.'));
   }
 
   summarize(foodItemArray) {
@@ -138,7 +140,7 @@ class App extends Component {
           }
         }
       }
-    }).fail(error => alert('Unable to get foods for selected collection.', error));
+    }).fail(error => Popup.alert('Unable to get foods for selected collection.'));
   }
 
   addDate(dateInput) {
@@ -164,7 +166,7 @@ class App extends Component {
           selectedDate: null
         });
       }
-    }).fail(error => alert('Unable to fetch list of collections.'));
+    }).fail(error => Popup.alert('Unable to fetch list of collections.'));
   }
 
   deleteDate(date) {
@@ -176,7 +178,7 @@ class App extends Component {
       success: (data, status, xhr) => {
         this.getDates();
       }
-    }).fail(error => alert('Unable to delete collection from the database.'));
+    }).fail(error => Popup.alert('Unable to delete collection from the database.'));
   }
 
   tryToLogin(login) {
@@ -191,7 +193,7 @@ class App extends Component {
           route: 'dates'
         });
       }
-    }).fail(error => alert('Unable to login.\n\nValid email address and minimum password length of 6 characters required.'));
+    }).fail(error => Popup.alert('Unable to login. Valid email address and minimum password length of 6 characters required.'));
   }
 
   tryToRegister(register) {
@@ -205,7 +207,7 @@ class App extends Component {
           route: 'dates'
         });
       }
-    }).fail(error => alert('Unable to register.\n\nValid email address and minimum password length of 6 characters required.'));
+    }).fail(error => Popup.alert('Unable to register. Valid email address and minimum password length of 6 characters required.'));
   }
 
   logout() {
@@ -233,7 +235,7 @@ class App extends Component {
           route: 'login'
         });
       }
-    }).fail(error => alert('Unable to logout.'));
+    }).fail(error => Popup.alert('Unable to logout.'));
   }
 
   setRoute(route) {
@@ -243,9 +245,7 @@ class App extends Component {
           return;
         }
         if (this.state.route === 'foods' && this.state.foodItems.length === 0) {
-          if (confirm('Food collection will not be saved because it contains no entries.\n\nLeave page anyway?') === false) {
-            return;
-          }
+          Popup.alert('Food collection was not saved because it did not contain any entries.');
         }
         this.setState({
           route,
@@ -267,6 +267,8 @@ class App extends Component {
   render() {
     if (this.state.route === 'login') {
       return (
+        <div>
+          <Popup />
           <Login
             state={this.state}
             onLogin={login => this.tryToLogin(login)}
@@ -274,11 +276,14 @@ class App extends Component {
             onSetRoute={route => this.setRoute(route)}
             onLogout={() => this.logout()}
           />
+        </div>
       );
     }
 
     if (this.state.route === 'about') {
       return (
+        <div>
+          <Popup />
           <About
             state={this.state}
             onLogin={login => this.tryToLogin(login)}
@@ -286,11 +291,14 @@ class App extends Component {
             onSetRoute={route => this.setRoute(route)}
             onLogout={() => this.logout()}
           />
+        </div>
       );
     }
 
     if (this.state.route === 'dates') {
       return (
+        <div>
+          <Popup />
           <Dates
             state={this.state}
             onAddDate={dateInput => this.addDate(dateInput)}
@@ -300,11 +308,14 @@ class App extends Component {
             onLogout={() => this.logout()}
             onGetFoods={date => this.getFoods(date)}
           />
+        </div>
       );
     }
 
     if (this.state.route === 'foods') {
       return (
+        <div>
+          <Popup />
           <Foods
             state={this.state}
             onAddFood={(search, selectedDate) => this.addFood(search, selectedDate)}
@@ -313,6 +324,7 @@ class App extends Component {
             onSetRoute={route => this.setRoute(route)}
             onLogout={() => this.logout()}
           />
+        </div>
       );
     }
   }
