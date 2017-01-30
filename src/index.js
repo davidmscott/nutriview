@@ -29,6 +29,39 @@ class App extends Component {
     };
   }
 
+  getDetailedDates() {
+    var dateItems = this.state.dateItems;
+    var detailedDateList = [];
+
+    dateItems.forEach((date) => {
+      $.ajax({
+        method: 'GET',
+        url: `${path}/foods`,
+        headers: {'x-auth': this.state.token},
+        data: {date: date.date},
+        success: (res, status, xhr) => {
+          var updatedFoodItems = res.foodList.map(foodItem => {
+            var newFood = JSON.parse(JSON.parse(foodItem.foodDetail).body);
+            return newFood;
+          });
+
+          if (updatedFoodItems.length > 0) {
+            var newSummary = this.summarize(updatedFoodItems);
+            newSummary.date = date.date;
+            detailedDateList.push(newSummary);
+            detailedDateList.sort(function(a,b) {
+              return new Date(a.date).getTime() - new Date(b.date).getTime();
+            });
+            this.setState({
+              datesInfo: detailedDateList,
+              route: 'dates'
+            });
+          }
+        }
+      });
+    });
+  }
+
   addFood(search, selectedDate) {
     var data = {
       search,
@@ -160,10 +193,14 @@ class App extends Component {
       headers: {'x-auth': this.state.token},
       success: (res, status, xhr) => {
         var updatedDateItems = [...res.dateList];
+        updatedDateItems.sort(function(a,b) {
+          return new Date(a.date).getTime() - new Date(b.date).getTime()
+        });
         this.setState({
           dateItems: updatedDateItems,
           selectedDate: null
         });
+        this.getDetailedDates();
       }
     }).fail(error => Popup.alert('Unable to fetch list of collections.'));
   }
@@ -177,7 +214,7 @@ class App extends Component {
       success: (data, status, xhr) => {
         this.getDates();
       }
-    }).fail(error => Popup.alert('Unable to delete collection from the database.'));
+    }).fail(error => Popup.alert('Unable to delete date from the database.'));
   }
 
   tryToLogin(login) {
@@ -306,6 +343,7 @@ class App extends Component {
             onSetRoute={route => this.setRoute(route)}
             onLogout={() => this.logout()}
             onGetFoods={date => this.getFoods(date)}
+            onGetDetailedDates={() => this.getDetailedDates()}
           />
         </div>
       );
